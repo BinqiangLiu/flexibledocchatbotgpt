@@ -18,7 +18,7 @@ import tempfile
 load_dotenv()
 #openai.api_key = os.getenv("OPENAI_API_KEY")
 openai.api_key = os.environ.get("OPEN_API_KEY")
-os.environ["OPENAI_API_KEY"] = openai.api_key
+os.environ["OPENAI_API_KEY"] = str(openai.api_key)
 
 model_id = "gpt-3.5-turbo"
 
