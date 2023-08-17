@@ -1,6 +1,6 @@
 # DocChatbot for multi docs
 import os 
-import chromadb
+#import chromadb
 from PyPDF2 import PdfReader
 import pypdf
 import tiktoken
