@@ -46,7 +46,7 @@ try:
 except Exception as e:
 # Handle the error, e.g., print an error message or return a default text
 #    st.write("Documents not uploaded. Please upload your docs first and then enter your question.")
-    os.environ["OPENAI_API_KEY"] = openai.api_key
+    os.environ["OPENAI_API_KEY"] = str(openai.api_key)
 
 #loaders = PyPDFLoader(pdf_files)
 #index = VectorstoreIndexCreator().from_loaders([loaders])
