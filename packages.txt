@@ -1,1 +1,3 @@
 pysqlite3-binary
+pysqlite3
+pysqlite3-dev
