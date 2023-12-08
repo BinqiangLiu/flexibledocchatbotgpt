@@ -14,6 +14,8 @@ from langchain.embeddings.huggingface import HuggingFaceEmbeddings
 from dotenv import load_dotenv
 load_dotenv()
 import tempfile
+import timeit
+import datetime
 
 st.set_page_config(page_title="✨ PDF AI Chat Assistant - Open Source Version", layout="wide")
 st.subheader("✨ Welcome to PDF AI Chat Assistant - Life Enhancing with AI.")
@@ -22,6 +24,10 @@ st.write("Important notice: This Open PDF AI Chat Assistant is offered for infor
 css_file = "main.css"
 with open(css_file) as f:
     st.markdown("<style>{}</style>".format(f.read()), unsafe_allow_html=True)   
+
+current_datetime_0= datetime.datetime.now()
+print(f"Anything happens, this ST app will execute from top down. 程序初始化开始@ {current_datetime_0}")
+print()       
 
 print(f"定义处理多余的Context文本的函数")
 def remove_context(text):
@@ -61,7 +67,8 @@ llm = HuggingFaceHub(repo_id=repo_id,
 
 #chain = load_qa_chain(llm=llm, chain_type="stuff", prompt=PROMPT)
 
-loaders = []
+if "tf_switch" not in st.session_state:
+    st.session_state.tf_switch = True  
 
 if "embeddings" not in st.session_state:
     st.session_state.embeddings = HuggingFaceEmbeddings(model_name='sentence-transformers/all-MiniLM-L6-v2')
@@ -69,36 +76,49 @@ if "embeddings" not in st.session_state:
 if "index" not in st.session_state:
     st.session_state.index = ""        
 
+if "loaders" not in st.session_state:
+    st.session_state.loaders = []    
+
 with st.sidebar:
     st.subheader("Upload your Documents Here: ")
     pdf_files = st.file_uploader("Choose your PDF Files and Press OK", type=['pdf'], accept_multiple_files=True)
-    print("文件上传完毕")   #Streamlit程序中有任何操作，都会执行到这一步，但是下面由于有st.button需要用户触发才会执行，所以其中的代码就不会自动执行
+    print("文件上传完毕")   #Streamlit程序中有任何操作，都会执行到这一步，但是下面由于有st.button需要用户触发才会执行，所以其中的代码就不会自动执行    
+    for pdf_file in pdf_files:
+        with tempfile.NamedTemporaryFile(delete=False) as temp_file:
+            temp_file.write(pdf_file.read())
+            temp_file_path = temp_file.name
+        st.session_state.loaders.append(PyPDFLoader(temp_file_path))   #这个代码决定了只可以处理pdf文件
+#ImportError: pypdf package not found, please install it with `pip install pypdf`
+        print("---文件load完毕---")
+    print("文件load完毕")
+    
     if st.button('Process to AI Chat'):
         with st.spinner("Processing your PDF file..."):    
-            for pdf_file in pdf_files:
-                with tempfile.NamedTemporaryFile(delete=False) as temp_file:
-                    temp_file.write(pdf_file.read())
-                    temp_file_path = temp_file.name
-                loaders.append(PyPDFLoader(temp_file_path))   #这个代码决定了只可以处理pdf文件
-                print("文件load完毕")
             try:
-                print("开始制作index")
+                start_1 = timeit.default_timer() # Start timer   
+                print("开始制作index")                
+                st.session_state.index = VectorstoreIndexCreator(embedding=st.session_state.embeddings).from_loaders(st.session_state.loaders)
+        #ImportError: Could not import chromadb python package. Please install it with `pip install chromadb`.  
+                
                 #index = VectorstoreIndexCreator().from_loaders(loaders)        
                 #index = VectorstoreIndexCreator(embedding = HuggingFaceEmbeddings()).from_loaders(loaders)
-                #index = VectorstoreIndexCreator(embedding = embeddings).from_loaders(loaders)
-        
+                #index = VectorstoreIndexCreator(embedding = embeddings).from_loaders(loaders)        
                 #https://medium.com/@ynotfriedman2/automatic-loader-for-any-document-in-langchain-f9f8f798da0e
                 #index = VectorstoreIndexCreator(embedding = HuggingFaceEmbeddings()).from_loaders([loaders])
-                st.session_state.index = VectorstoreIndexCreator(embedding=st.session_state.embeddings).from_loaders(loaders)
-        #ImportError: Could not import chromadb python package. Please install it with `pip install chromadb`.        
+                
                 #https://www.akshaymakes.com/blogs/youtube-gpt        
-                #print("index制作完毕")
+                print("index制作完毕")
+                end_1 = timeit.default_timer()
+                print(f'index制作耗时： {end_1 - start_1}')  
+                
                 #index.save("./docchatbotindex")
                 #print("index本地保存")
+                print("临时文件："+temp_file_path)
                 os.remove(temp_file_path)
                 print("删除临时文件")
+                st.session_state.tf_switch=False
             except Exception as e:
-                st.write("Unknown error. Please try again.")  
+                st.write("Unknown error. Please try again.")                  
 
 # Handle the error, e.g., print an error message or return a default text
 #    st.write("Documents not uploaded. Please upload your docs first and then enter your question.")
@@ -106,19 +126,24 @@ with st.sidebar:
 
 #loaders = PyPDFLoader(pdf_files)
 #index = VectorstoreIndexCreator().from_loaders([loaders])
-prompt = st.text_input("Enter your question & query your PDF file:")
-print("用户问题输入完毕")
+prompt = st.text_input("Enter your question & query your PDF file:", disabled=st.session_state.tf_switch)
 #if st.session_state.user_question !="" and not st.session_state.user_question.strip().isspace() and not st.session_state.user_question == "" and not st.session_state.user_question.strip() == "" and not st.session_state.user_question.isspace():
 if prompt !="" and not prompt.strip().isspace() and not prompt == "" and not prompt.strip() == "" and not prompt.isspace():
+    print("用户输问题："+prompt)
     with st.spinner("AI Working...Please wait a while to Cheers!"):   
         try:
+            start_2 = timeit.default_timer() # Start timer   
+            print("st.session_state.index.query开始")
             response = st.session_state.index.query(llm=llm, question = prompt, chain_type = 'stuff')   
             # stuff chain type sends all the relevant text chunks from the document to LLM    
-            print("index问答完毕")
+            end_2 = timeit.default_timer()
+            print(f'st.session_state.index.query结束，共耗时： {end_2 - start_2}') 
+            
             cleaned_initial_ai_response = remove_context(response)
             print("调用remove_context函数对['output_text']进行处理之后的输出结果: ")
             print(cleaned_initial_ai_response)
-            print()             
+            print() 
+            
             final_ai_response = cleaned_initial_ai_response.partition('<|end|>')[0].strip().replace('\n\n', '\n').replace('<|end|>', '').replace('<|user|>', '').replace('<|system|>', '').replace('<|assistant|>', '')
             new_final_ai_response = final_ai_response.split('Unhelpful Answer:')[0].strip()
             new_final_ai_response = new_final_ai_response.split('Note:')[0].strip()
@@ -134,5 +159,5 @@ if prompt !="" and not prompt.strip().isspace() and not prompt == "" and not pro
         #    st.write("<br><i>" + response + "</i><hr>", unsafe_allow_html=True )
         #st.write("<b>" + prompt + "</b><br><i>" + response + "</i><hr>", unsafe_allow_html=True )
         except Exception as e:
-    # Handle the error, e.g., print an error message or return a default text            
+    # Handle the error, e.g., print an error message or return a default text
             print("Documents not uploaded or Unknown error.")
