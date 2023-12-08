@@ -1,7 +1,7 @@
 import streamlit as st
 import os 
 #from PyPDF2 import PdfReader
-#import pypdf
+import pypdf
 import chromadb
 from langchain.document_loaders.base import Document
 from langchain.indexes import VectorstoreIndexCreator
