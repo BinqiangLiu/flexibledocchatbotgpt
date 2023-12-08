@@ -118,8 +118,7 @@ if prompt !="" and not prompt.strip().isspace() and not prompt == "" and not pro
             cleaned_initial_ai_response = remove_context(response)
             print("调用remove_context函数对['output_text']进行处理之后的输出结果: ")
             print(cleaned_initial_ai_response)
-            print() 
-            
+            print()             
             final_ai_response = cleaned_initial_ai_response.partition('<|end|>')[0].strip().replace('\n\n', '\n').replace('<|end|>', '').replace('<|user|>', '').replace('<|system|>', '').replace('<|assistant|>', '')
             new_final_ai_response = final_ai_response.split('Unhelpful Answer:')[0].strip()
             new_final_ai_response = new_final_ai_response.split('Note:')[0].strip()
@@ -135,5 +134,5 @@ if prompt !="" and not prompt.strip().isspace() and not prompt == "" and not pro
         #    st.write("<br><i>" + response + "</i><hr>", unsafe_allow_html=True )
         #st.write("<b>" + prompt + "</b><br><i>" + response + "</i><hr>", unsafe_allow_html=True )
         except Exception as e:
-    # Handle the error, e.g., print an error message or return a default text
-            st.write("Documents not uploaded or Unknown error.")
+    # Handle the error, e.g., print an error message or return a default text            
+            print("Documents not uploaded or Unknown error.")
