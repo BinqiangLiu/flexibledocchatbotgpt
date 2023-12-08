@@ -1,6 +1,7 @@
 streamlit
 chromadb
 langchain
+pypdf
 python-dotenv
 sentence_transformers
 huggingface_hub
@@ -9,4 +10,3 @@ huggingface_hub
 #openai
 #tiktoken
 #PyPDF2
-#pypdf
