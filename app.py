@@ -106,7 +106,7 @@ with st.sidebar:
 
 #loaders = PyPDFLoader(pdf_files)
 #index = VectorstoreIndexCreator().from_loaders([loaders])
-prompt = st.text_input("Welcome to AI Smart Query, questions will be answered based on the sources in our docs directory.\n\n欢迎来到AI智慧畅聊，基于上传的pdf文件资源进行高效QA问答。")
+prompt = st.text_input("Enter your question & query your PDF file:")
 print("用户问题输入完毕")
 #if st.session_state.user_question !="" and not st.session_state.user_question.strip().isspace() and not st.session_state.user_question == "" and not st.session_state.user_question.strip() == "" and not st.session_state.user_question.isspace():
 if prompt !="" and not prompt.strip().isspace() and not prompt == "" and not prompt.strip() == "" and not prompt.isspace():
